@@ -6,3 +6,4 @@ akshare
 openpyxl
 pandas-ta
 streamlit-autorefresh
+setuptools
