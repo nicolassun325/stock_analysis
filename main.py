@@ -283,7 +283,44 @@ def main():
         st.dataframe(format_numeric_df(dcf_df), use_container_width=True, hide_index=True)
         with col2:
             st.metric("DCF估算总现值", f"{总现值:,.2f}")
-            st.metric('DCF每股价值', f"{总现值 / 股本.iloc.loc['总股本','金额']:,.2f}" if not 股本.empty else "无数据")
+            
+            # 安全地计算每股价值
+            try:
+                if not 股本.empty:
+                    # 查找包含"总股本"、"股本"等关键词的行
+                    possible_keys = ['总股本', '股本总数', '股本', '总股数', '股份总数']
+                    股本_value = None
+                    
+                    for key in possible_keys:
+                        if key in 股本['项目'].values:
+                            股本_value = 股本[股本['项目'] == key]['金额'].iloc[0]
+                            break
+                    
+                    # 如果没找到，尝试通过索引访问（假设第7行或第8行是股本信息）
+                    if 股本_value is None and len(股本) > 7:
+                        股本_value = 股本.iloc[7, 1]  # 第8行第2列
+                    elif 股本_value is None and len(股本) > 6:
+                        股本_value = 股本.iloc[6, 1]  # 第7行第2列
+                    
+                    if 股本_value is not None and pd.notnull(股本_value) and 股本_value != 0:
+                        # 尝试转换为数值
+                        if isinstance(股本_value, str):
+                            股本_value = parse_chinese_number(股本_value)
+                        else:
+                            股本_value = float(股本_value)
+                        
+                        if 股本_value > 0:
+                            每股价值 = 总现值 / 股本_value
+                            st.metric('DCF每股价值', f"{每股价值:,.2f}")
+                        else:
+                            st.metric('DCF每股价值', "股本数据无效")
+                    else:
+                        st.metric('DCF每股价值', "未找到股本数据")
+                else:
+                    st.metric('DCF每股价值', "股本数据为空")
+            except Exception as e:
+                st.metric('DCF每股价值', f"计算错误: {str(e)[:20]}")
+            
             st.metric("当前股价", f"{df['收盘'].iloc[-1]:,.2f}")
 
     stock_financial_analysis_indicator_df = ak.stock_financial_analysis_indicator(symbol=symbols, start_year="2020")
