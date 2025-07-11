@@ -1,7 +1,7 @@
 streamlit
 pandas
 plotly
-numpy
+numpy<2.0.0
 akshare
 openpyxl
 pandas-ta
