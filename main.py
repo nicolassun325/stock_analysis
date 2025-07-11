@@ -283,7 +283,7 @@ def main():
         st.dataframe(format_numeric_df(dcf_df), use_container_width=True, hide_index=True)
         with col2:
             st.metric("DCF估算总现值", f"{总现值:,.2f}")
-            st.metric('DCF每股价值', f"{总现值 / 股本.iloc[7,1]:,.2f}" if not 股本.empty else "无数据")
+            st.metric('DCF每股价值', f"{总现值 / 股本.iloc.loc['总股本','金额']:,.2f}" if not 股本.empty else "无数据")
             st.metric("当前股价", f"{df['收盘'].iloc[-1]:,.2f}")
 
     stock_financial_analysis_indicator_df = ak.stock_financial_analysis_indicator(symbol=symbols, start_year="2020")
